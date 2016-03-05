@@ -1,0 +1,36 @@
+{
+  "name": "carrotmq",
+  "description": "CarrotMQ - AMQP wrapper for managing RabbitMQ",
+  "version": "0.0.1",
+  "author": "Paul Duthoit <duthoit.paul@gmail.com>",
+  "homepage": "http://carrotmq.com/",
+  "keywords": [
+    "rabbitmq",
+    "exchange",
+    "queue",
+    "message",
+    "amqp",
+    "wrapper",
+    "pubsub"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "amqp": "0.2.4",
+    "hat": "0.0.3",
+    "underscore": "1.8.3"
+  },
+  "directories": {
+    "lib": "./lib/carrotmq"
+  },
+  "bugs": {
+    "url": "https://github.com/paulduthoit/carrotmq/issues/new",
+    "email": "duthoit.paul@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/paulduthoit/carrotmq.git"
+  },
+  "scripts": {
+    "start": "node index.js"
+  }
+}
