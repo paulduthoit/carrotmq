@@ -19,6 +19,10 @@
     "hat": "0.0.3",
     "underscore": "1.8.3"
   },
+  "devDependencies": {
+    "debug": "^2.2.0",
+    "mocha": "2.4.5"
+  },
   "directories": {
     "lib": "./lib/carrotmq"
   },
@@ -31,6 +35,6 @@
     "url": "git://github.com/paulduthoit/carrotmq.git"
   },
   "scripts": {
-    "start": "node index.js"
+    "test": "mocha ./tests/index.js --timeout 10000"
   }
 }
