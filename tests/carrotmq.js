@@ -246,16 +246,22 @@ describe('carrotmq.js :', function() {
 	});
 
 	// Create an exchange
-	describe('CarrotMQ.createExchange', function() {
+	describe('Connection.createExchange', function() {
 		
 		it('should create an exchange', function() {
+
+			// Data
+			var mainConnection;
 
 			// Create connection
 			return carrotmq.createConnection('main', { host: config.server.host, port: config.server.port, login: config.server.login, password: config.server.password })
 				.then(function(connection) {
 
+					// Set main connection
+					mainConnection = connection;
+
 					// Return create exchange promise
-					return carrotmq.createExchange('main', 'tasks');
+					return mainConnection.createExchange('tasks');
 
 				})
 				.then(function(exchange) {
@@ -284,12 +290,18 @@ describe('carrotmq.js :', function() {
 		
 		it('should create a queue', function() {
 
+			// Data
+			var mainConnection;
+
 			// Create connection
 			return carrotmq.createConnection('main', { host: config.server.host, port: config.server.port, login: config.server.login, password: config.server.password })
 				.then(function(connection) {
 
+					// Set main connection
+					mainConnection = connection;
+
 					// Return create queue promise
-					return carrotmq.createQueue('main', '');
+					return mainConnection.createQueue('');
 
 				})
 				.then(function(queue) {
@@ -318,12 +330,18 @@ describe('carrotmq.js :', function() {
 		
 		it('should create a reply exchange', function() {
 
+			// Data
+			var mainConnection;
+
 			// Create connection
 			return carrotmq.createConnection('main', { host: config.server.host, port: config.server.port, login: config.server.login, password: config.server.password })
 				.then(function(connection) {
 
+					// Set main connection
+					mainConnection = connection;
+
 					// Return create reply exchange promise
-					return carrotmq.createReplyExchange('main', 'reply');
+					return mainConnection.createReplyExchange('reply');
 
 				})
 				.then(function(exchange) {
@@ -353,12 +371,18 @@ describe('carrotmq.js :', function() {
 		
 		it('should create a reply queue', function() {
 
+			// Data
+			var mainConnection;
+
 			// Create connection
 			return carrotmq.createConnection('main', { host: config.server.host, port: config.server.port, login: config.server.login, password: config.server.password })
 				.then(function(connection) {
 
+					// Set main connection
+					mainConnection = connection;
+
 					// Return create reply queue promise
-					return carrotmq.createReplyQueue('main');
+					return mainConnection.createReplyQueue();
 
 				})
 				.then(function(queue) {
@@ -388,19 +412,25 @@ describe('carrotmq.js :', function() {
 		
 		it('should publish to reply exchange', function() {
 
+			// Data
+			var mainConnection;
+
 			// Create connection
 			return carrotmq.createConnection('main', { host: config.server.host, port: config.server.port, login: config.server.login, password: config.server.password })
 				.then(function(connection) {
 
+					// Set main connection
+					mainConnection = connection;
+
 					// Create reply exchange/queue promise
 					return Promise.all([
-							carrotmq.createReplyExchange('main', 'reply'),
-							carrotmq.createReplyQueue('main')
+							mainConnection.createReplyExchange('reply'),
+							mainConnection.createReplyQueue()
 						])
 						.then(function(result) {
 
 							// Init reply
-							return carrotmq.initReply('main');
+							return mainConnection.initReply();
 
 						});
 
@@ -413,7 +443,7 @@ describe('carrotmq.js :', function() {
 						var tasksQueue;
 
 						// Create tasks queue
-						return carrotmq.createQueue('main')
+						return mainConnection.createQueue()
 							.then(function(queue) {
 
 								// Set tasks queue
@@ -443,7 +473,7 @@ describe('carrotmq.js :', function() {
 									payload.count++;
 
 									// Reply
-									carrotmq.reply(tasksQueue.connection.name, payload._task_id, payload.count);
+									mainConnection.reply(payload._task_id, payload.count);
 
 								});
 
@@ -460,7 +490,7 @@ describe('carrotmq.js :', function() {
 						var tasksExchange;
 
 						// Create tasks exchanges
-						return carrotmq.createExchange('main', 'tasks')
+						return mainConnection.createExchange('tasks')
 							.then(function(exchange) {
 
 								// Set tasks exchange
