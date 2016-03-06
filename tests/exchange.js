@@ -3,7 +3,7 @@ var logInfo = require("debug")("info");
 var _ = require("underscore");
 var fs = require("fs");
 var amqp = require("amqp");
-var carrotmq = require("../lib/carrotmq");
+var haremq = require("../lib/haremq");
 var config = require("./config");
 
 
@@ -16,7 +16,7 @@ describe('exchange.js :', function() {
 		it('should return ENOTFOUND exception', function() {
 
 			// Create connection
-			return carrotmq.createConnection('main', { host: 'wrong_host', port: config.server.port, login: config.server.login, password: config.server.password })
+			return haremq.createConnection('main', { host: 'wrong_host', port: config.server.port, login: config.server.login, password: config.server.password })
 				.then(function(connection) {
 
 					// Resolve

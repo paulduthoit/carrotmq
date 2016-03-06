@@ -1,9 +1,9 @@
 {
-  "name": "carrotmq",
-  "description": "CarrotMQ - AMQP wrapper for managing RabbitMQ",
+  "name": "haremq",
+  "description": "HareMQ - AMQP wrapper for managing RabbitMQ",
   "version": "0.0.1",
   "author": "Paul Duthoit <duthoit.paul@gmail.com>",
-  "homepage": "http://carrotmq.com/",
+  "homepage": "http://haremq.com/",
   "keywords": [
     "rabbitmq",
     "exchange",
@@ -24,15 +24,15 @@
     "mocha": "2.4.5"
   },
   "directories": {
-    "lib": "./lib/carrotmq"
+    "lib": "./lib/haremq"
   },
   "bugs": {
-    "url": "https://github.com/paulduthoit/carrotmq/issues/new",
+    "url": "https://github.com/paulduthoit/haremq/issues/new",
     "email": "duthoit.paul@gmail.com"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/paulduthoit/carrotmq.git"
+    "url": "git://github.com/paulduthoit/haremq.git"
   },
   "scripts": {
     "test": "mocha ./tests/index.js --timeout 10000"

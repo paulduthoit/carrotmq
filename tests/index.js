@@ -3,13 +3,16 @@ var logInfo = require("debug")("info");
 var _ = require("underscore");
 var fs = require("fs");
 var amqp = require("amqp");
-var carrotmq = require("../lib/carrotmq");
+var haremq = require("../lib/haremq");
 var config = require("./config");
 
-// carrotmq
-describe('CarrotMQ', function() {
+// haremq
+describe('HareMQ', function() {
 
-	// Test carrotmq
-	describe('', function() { require('./carrotmq'); });
+	// Test haremq
+	describe('', function() { require('./haremq'); });
+
+	// Test connection
+	describe('', function() { require('./connection'); });
 	
 });

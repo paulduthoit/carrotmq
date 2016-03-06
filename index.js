@@ -1,6 +1,6 @@
 /**
- * Export lib/carrotmq
+ * Export lib/haremq
  *
  */
 
-module.exports = require('./lib/carrotmq');
+module.exports = require('./lib/haremq');
