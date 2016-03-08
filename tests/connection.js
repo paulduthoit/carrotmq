@@ -256,7 +256,90 @@ describe('connection.js :', function() {
 
 	});
 
-	// Reply
+	// Publish
+	describe('Connection.publish', function() {
+		
+		it('should publish 1', function() {
+
+			// Data
+			var mainConnection;
+
+			// Return promise
+			return new Promise(function(resolve, reject) {
+
+				// Create connection
+				haremq.createConnection('main', { host: config.server.host, port: config.server.port, login: config.server.login, password: config.server.password })
+					.then(function(connection) {
+
+						// Set main connection
+						mainConnection = connection;
+
+						// Create tasks exchange
+						return mainConnection.createExchange('tasks')
+
+					})
+					.then(function() {
+
+						/* CONSUMER */
+
+							// Create tasks queue
+							return mainConnection.createQueue('increment')
+								.then(function(queue) {
+
+									// Resolve
+									return queue.bind('tasks', 'increment')
+										.then(function() {
+
+											// Subscribe
+											return queue.subscribe(function(payload) {
+
+												// Log
+												logInfo(payload);
+
+												// Test
+												assert.equal(payload.body.count, 1);
+
+												// Destroy
+												haremq.removeConnection('main');
+
+												// Resolve
+												resolve();
+												return;
+
+											});
+
+										});
+
+								});
+
+						/* /CONSUMER */
+
+					})
+					.then(function() {
+
+						/* PRODUCER */
+
+							// Run request
+							return mainConnection.publish('tasks', 'increment', { taskId: 'id1', body: { count: 1 } });
+
+						/* /PRODUCER */
+
+					})
+					.catch(function(err) {
+
+						// Reject
+						reject(err);
+						return
+
+					});
+
+			});
+
+		});
+
+	});
+
+	// Request
 	describe('Connection.request', function() {
 		
 		it('should publish 1 and return 2', function() {
@@ -307,7 +390,7 @@ describe('connection.js :', function() {
 				})
 				.then(function() {
 
-					/* PROVIDER */
+					/* PRODUCER */
 
 						// Return promise
 						return new Promise(function(resolve, reject) {
@@ -370,7 +453,7 @@ describe('connection.js :', function() {
 
 						});
 
-					/* /PROVIDER */
+					/* /PRODUCER */
 
 				});
 
