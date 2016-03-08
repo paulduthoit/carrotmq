@@ -115,24 +115,14 @@ describe('connection.js :', function() {
 				})
 				.then(function(exchange) {
 
-					// Test
-					try{
-
-						// Get exchange
-						var exchange = mainConnection.getExchange('undefined_exchange');
-
-						// Test
-						assert.fail();
-					
-					} catch(e) {
-
-						// Test
-						assert.equal(e.message, 'undefined_exchange is not a defined exchange');
-
-					}
+					// Get exchange
+					var exchange = mainConnection.getExchange('undefined_exchange');
 
 					// Log
 					logInfo(String(exchange));
+
+					// Test
+					assert.equal(typeof exchange, 'undefined');
 
 					// Destroy
 					haremq.removeConnection('main');
@@ -266,92 +256,10 @@ describe('connection.js :', function() {
 
 	});
 
-	// Create a reply exchange
-	describe('Connection.createReplyExchange', function() {
-		
-		it('should create a reply exchange', function() {
-
-			// Data
-			var mainConnection;
-
-			// Create connection
-			return haremq.createConnection('main', { host: config.server.host, port: config.server.port, login: config.server.login, password: config.server.password })
-				.then(function(connection) {
-
-					// Set main connection
-					mainConnection = connection;
-
-					// Return create reply exchange promise
-					return mainConnection.createReplyExchange('reply');
-
-				})
-				.then(function(exchange) {
-
-					// Log
-					logInfo(String(exchange));
-
-					// Test
-					assert.equal(exchange instanceof haremq.Exchange, true);
-					assert.equal(exchange.driverInstance.connection instanceof amqp.Connection, true);
-					assert.equal(exchange.connection.replyExchange instanceof haremq.Exchange, true);
-
-					// Destroy
-					haremq.removeConnection('main');
-
-					// Resolve
-					return Promise.resolve();
-
-				});
-
-		});
-
-	});
-
-	// Create a reply queue
-	describe('Connection.createReplyQueue', function() {
-		
-		it('should create a reply queue', function() {
-
-			// Data
-			var mainConnection;
-
-			// Create connection
-			return haremq.createConnection('main', { host: config.server.host, port: config.server.port, login: config.server.login, password: config.server.password })
-				.then(function(connection) {
-
-					// Set main connection
-					mainConnection = connection;
-
-					// Return create reply queue promise
-					return mainConnection.createReplyQueue();
-
-				})
-				.then(function(queue) {
-
-					// Log
-					logInfo(String(queue));
-
-					// Test
-					assert.equal(queue instanceof haremq.Queue, true);
-					assert.equal(queue.driverInstance.connection instanceof amqp.Connection, true);
-					assert.equal(queue.connection.replyQueue instanceof haremq.Queue, true);
-
-					// Destroy
-					haremq.removeConnection('main');
-
-					// Resolve
-					return Promise.resolve();
-
-				});
-
-		});
-
-	});
-
 	// Reply
-	describe('Connection.reply', function() {
+	describe('Connection.request', function() {
 		
-		it('should publish to reply exchange', function() {
+		it('should publish 1 and return 2', function() {
 
 			// Data
 			var mainConnection;
@@ -363,60 +271,34 @@ describe('connection.js :', function() {
 					// Set main connection
 					mainConnection = connection;
 
-					// Create reply exchange/queue promise
-					return Promise.all([
-							mainConnection.createReplyExchange('reply'),
-							mainConnection.createReplyQueue()
-						])
-						.then(function(result) {
-
-							// Init reply
-							return mainConnection.initReply();
-
-						});
+					// Create tasks exchange
+					return mainConnection.createExchange('tasks')
 
 				})
 				.then(function() {
 
 					/* CONSUMER */
 
-						// Data
-						var tasksQueue;
-
 						// Create tasks queue
-						return mainConnection.createQueue()
+						return mainConnection.createQueue('increment')
 							.then(function(queue) {
 
-								// Set tasks queue
-								tasksQueue = queue;
-
 								// Resolve
-								return Promise.resolve();
+								return queue.bind('tasks', 'increment')
+									.then(function() {
 
-							})
-							.then(function() {
+										// Subscribe
+										return queue.subscribe(function(payload) {
 
-								// Bind tasks exchange
-								return tasksQueue.bind('tasks', '');
+											// Increment
+											payload.body.count++;
 
-							})
-							.then(function() {
+											// Publish
+											mainConnection.publish('tasks', 'increment_result', { taskId: payload.taskId, result: payload.body.count });
 
-								// Subscribe
-								return tasksQueue.subscribe(function(payload) {
+										});
 
-									// Check payload
-									if(payload.action !== 'INCREMENT') {
-										return;
-									}
-
-									// Increment
-									payload.count++;
-
-									// Reply
-									mainConnection.reply(payload._task_id, payload.count);
-
-								});
+									});
 
 							});
 
@@ -427,40 +309,66 @@ describe('connection.js :', function() {
 
 					/* PROVIDER */
 
-						// Data
-						var tasksExchange;
+						// Return promise
+						return new Promise(function(resolve, reject) {
 
-						// Create tasks exchanges
-						return mainConnection.createExchange('tasks')
-							.then(function(exchange) {
+							// Subscribe listener
+							var subscribeListener = function(message) {
 
-								// Set tasks exchange
-								tasksExchange = exchange;
+								// Check taskId
+								if(message.taskId !== 'id1') {
+									return;
+								}
+
+								// Destroy queues
+								_.each(this.queues, function(obj) {
+									obj.queue.destroy();
+								});
+
+								// Log
+								logInfo(message);
+
+								// Test
+								assert.equal(message.result, 2);
+
+								// Destroy
+								haremq.removeConnection('main');
 
 								// Resolve
-								return Promise.resolve();
+								resolve();
+								return;
 
-							}).then(function() {
+							};
 
-								// Request
-								return tasksExchange.request('', { action: 'INCREMENT', count: 1 })
-									.then(function(result) {
+							// Set request data
+							var queue = {
+								queue: '',
+								bindExchange: 'tasks',
+								bindRouting: 'increment_result',
+								subscribeListener: subscribeListener
+							};
+							var task = {
+								exchange: 'tasks',
+								routing: 'increment',
+								payload: {
+									taskId: 'id1',
+									body: {
+										count: 1
+									}
+								}
+							};
 
-										// Log
-										logInfo(result);
+							// Run request
+							mainConnection.request(queue, task)
+								.catch(function(err) {
 
-										// Test
-										assert.equal(result, 2);
+									// Reject
+									reject(err);
+									return
 
-										// Destroy
-										haremq.removeConnection('main');
+								});
 
-										// Resolve
-										return Promise.resolve();
-
-									});
-
-							});
+						});
 
 					/* /PROVIDER */
 

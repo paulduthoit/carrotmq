@@ -157,36 +157,17 @@ describe('haremq.js :', function() {
 		
 		it('should return an error', function() {
 
-			// Create connection
-			return haremq.createConnection('main', { host: config.server.host, port: config.server.port, login: config.server.login, password: config.server.password })
-				.then(function(connection) {
+			// Get connection
+			var connection = haremq.getConnection('undefined_connection');
 
-					// Test
-					try{
+			// Log
+			logInfo(String(connection));
 
-						// Get connection
-						var connection2 = haremq.getConnection('undefined_connection');
+			// Test
+			assert.equal(typeof connection, 'undefined');
 
-						// Test
-						assert.fail();
-					
-					} catch(e) {
-
-						// Test
-						assert.equal(e.message, 'undefined_connection is not a defined connection');
-
-					}
-
-					// Log
-					logInfo(String(connection));
-
-					// Destroy
-					haremq.removeConnection('main');
-
-					// Resolve
-					return Promise.resolve();
-
-				});
+			// Resolve
+			return Promise.resolve();
 
 		});
 		
