@@ -4,6 +4,7 @@
   "version": "0.0.1",
   "author": "Paul Duthoit <duthoit.paul@gmail.com>",
   "homepage": "http://haremq.com/",
+  "main":"index.js",
   "keywords": [
     "rabbitmq",
     "exchange",
