@@ -10,41 +10,61 @@ var config = require("./config");
 // connection.js
 describe('connection.js :', function() {
 
-	// Create an exchange
-	describe('Connection.createExchange', function() {
-		
-		it('should create an exchange', function() {
+	// Data
+	var mainConnection;
+	var tasksExchange;
 
-			// Data
-			var mainConnection;
+	// Before each
+	beforeEach(function() {
 
-			// Create connection
-			return haremq.createConnection('main', { host: config.server.host, port: config.server.port, login: config.server.login, password: config.server.password })
+		// Create connection
+		return haremq.createConnection('main', { host: config.server.host, port: config.server.port, login: config.server.login, password: config.server.password })
 				.then(function(connection) {
 
 					// Set main connection
 					mainConnection = connection;
 
-					// Return create exchange promise
+					// Create tasks exchange
 					return mainConnection.createExchange('tasks');
 
 				})
 				.then(function(exchange) {
 
-					// Log
-					logInfo(String(exchange));
-
-					// Test
-					assert.equal(exchange instanceof haremq.Exchange, true);
-					assert.equal(exchange.driverInstance.connection instanceof amqp.Connection, true);
-
-					// Destroy
-					haremq.removeConnection('main');
+					// Set tasks exchange
+					tasksExchange = exchange;
 
 					// Resolve
 					return Promise.resolve();
 
 				});
+
+	});
+
+	// After each
+	afterEach(function() {
+
+		// Destroy
+		haremq.removeConnection('main');
+
+		// Resolve
+		return Promise.resolve();
+
+	});
+
+	// Create an exchange
+	describe('Connection.createExchange', function() {
+		
+		it('should create an exchange', function() {
+
+			// Log
+			logInfo(String(tasksExchange));
+
+			// Test
+			assert.equal(tasksExchange instanceof haremq.Exchange, true);
+			assert.equal(tasksExchange.driverInstance.connection instanceof amqp.Connection, true);
+
+			// Resolve
+			return Promise.resolve();
 
 		});
 
@@ -56,39 +76,18 @@ describe('connection.js :', function() {
 		it('should get all exchanges', function() {
 
 			// Data
-			var mainConnection;
+			var exchanges = mainConnection.getExchanges();
 
-			// Create connection
-			return haremq.createConnection('main', { host: config.server.host, port: config.server.port, login: config.server.login, password: config.server.password })
-				.then(function(connection) {
+			// Log
+			logInfo(String(exchanges));
 
-					// Set main connection
-					mainConnection = connection;
+			// Test
+			assert.equal(exchanges instanceof Array, true);
+			assert.equal(exchanges.length, 1);
+			assert.equal(exchanges[0] instanceof haremq.Exchange, true);
 
-					// Return create exchange promise
-					return mainConnection.createExchange('tasks');
-
-				})
-				.then(function(exchange) {
-
-					// Data
-					var exchanges = mainConnection.getExchanges();
-
-					// Log
-					logInfo(String(exchanges));
-
-					// Test
-					assert.equal(exchanges instanceof Array, true);
-					assert.equal(exchanges.length, 1);
-					assert.equal(exchanges[0] instanceof haremq.Exchange, true);
-
-					// Destroy
-					haremq.removeConnection('main');
-
-					// Resolve
-					return Promise.resolve();
-
-				});
+			// Resolve
+			return Promise.resolve();
 
 		});
 
@@ -99,75 +98,33 @@ describe('connection.js :', function() {
 		
 		it('should return an error', function() {
 
-			// Data
-			var mainConnection;
+			// Get exchange
+			var exchange = mainConnection.getExchange('undefined_exchange');
 
-			// Create connection
-			return haremq.createConnection('main', { host: config.server.host, port: config.server.port, login: config.server.login, password: config.server.password })
-				.then(function(connection) {
+			// Log
+			logInfo(String(exchange));
 
-					// Set main connection
-					mainConnection = connection;
+			// Test
+			assert.equal(typeof exchange, 'undefined');
 
-					// Return create exchange promise
-					return mainConnection.createExchange('tasks');
-
-				})
-				.then(function(exchange) {
-
-					// Get exchange
-					var exchange = mainConnection.getExchange('undefined_exchange');
-
-					// Log
-					logInfo(String(exchange));
-
-					// Test
-					assert.equal(typeof exchange, 'undefined');
-
-					// Destroy
-					haremq.removeConnection('main');
-
-					// Resolve
-					return Promise.resolve();
-
-				});
+			// Resolve
+			return Promise.resolve();
 
 		});
 		
 		it('should get an exchange', function() {
 
 			// Data
-			var mainConnection;
+			var exchange = mainConnection.getExchange('tasks');
 
-			// Create connection
-			return haremq.createConnection('main', { host: config.server.host, port: config.server.port, login: config.server.login, password: config.server.password })
-				.then(function(connection) {
+			// Log
+			logInfo(String(exchange));
 
-					// Set main connection
-					mainConnection = connection;
+			// Test
+			assert.equal(exchange instanceof haremq.Exchange, true);
 
-					// Return create exchange promise
-					return mainConnection.createExchange('tasks');
-
-				})
-				.then(function(exchange) {
-
-					// Data
-					var exchange = mainConnection.getExchange('tasks');
-
-					// Log
-					logInfo(String(exchange));
-
-					// Test
-					assert.equal(exchange instanceof haremq.Exchange, true);
-
-					// Destroy
-					haremq.removeConnection('main');
-
-					// Resolve
-					return Promise.resolve();
-
-				});
+			// Resolve
+			return Promise.resolve();
 
 		});
 
@@ -178,39 +135,18 @@ describe('connection.js :', function() {
 		
 		it('should remove an exchange', function() {
 
+			// Remove exchange
+			mainConnection.removeExchange('tasks');
+
 			// Data
-			var mainConnection;
+			var exchanges = mainConnection.exchanges;
 
-			// Create connection
-			return haremq.createConnection('main', { host: config.server.host, port: config.server.port, login: config.server.login, password: config.server.password })
-				.then(function(connection) {
+			// Test
+			assert.equal(exchanges instanceof Array, true);
+			assert.equal(exchanges.length, 0);
 
-					// Set main connection
-					mainConnection = connection;
-
-					// Return create exchange promise
-					return mainConnection.createExchange('tasks');
-
-				})
-				.then(function(connection) {
-
-					// Remove exchange
-					mainConnection.removeExchange('tasks');
-
-					// Data
-					var exchanges = mainConnection.exchanges;
-
-					// Test
-					assert.equal(exchanges instanceof Array, true);
-					assert.equal(exchanges.length, 0);
-
-					// Destroy
-					haremq.removeConnection('main');
-
-					// Resolve
-					return Promise.resolve();
-
-				});
+			// Resolve
+			return Promise.resolve();
 
 		});
 
@@ -221,20 +157,8 @@ describe('connection.js :', function() {
 		
 		it('should create a queue', function() {
 
-			// Data
-			var mainConnection;
-
-			// Create connection
-			return haremq.createConnection('main', { host: config.server.host, port: config.server.port, login: config.server.login, password: config.server.password })
-				.then(function(connection) {
-
-					// Set main connection
-					mainConnection = connection;
-
-					// Return create queue promise
-					return mainConnection.createQueue('');
-
-				})
+			// Return create queue promise
+			return mainConnection.createQueue('')
 				.then(function(queue) {
 
 					// Log
@@ -243,9 +167,6 @@ describe('connection.js :', function() {
 					// Test
 					assert.equal(queue instanceof haremq.Queue, true);
 					assert.equal(queue.driverInstance.connection instanceof amqp.Connection, true);
-
-					// Destroy
-					haremq.removeConnection('main');
 
 					// Resolve
 					return Promise.resolve();
@@ -261,23 +182,11 @@ describe('connection.js :', function() {
 		
 		it('should publish 1', function() {
 
-			// Data
-			var mainConnection;
-
 			// Return promise
 			return new Promise(function(resolve, reject) {
 
 				// Create connection
-				haremq.createConnection('main', { host: config.server.host, port: config.server.port, login: config.server.login, password: config.server.password })
-					.then(function(connection) {
-
-						// Set main connection
-						mainConnection = connection;
-
-						// Create tasks exchange
-						return mainConnection.createExchange('tasks')
-
-					})
+				Promise.resolve()
 					.then(function() {
 
 						/* CONSUMER */
@@ -298,9 +207,6 @@ describe('connection.js :', function() {
 
 												// Test
 												assert.equal(payload.body.count, 1);
-
-												// Destroy
-												haremq.removeConnection('main');
 
 												// Resolve
 												resolve();
@@ -344,20 +250,8 @@ describe('connection.js :', function() {
 		
 		it('should publish 1 and return 2', function() {
 
-			// Data
-			var mainConnection;
-
 			// Create connection
-			return haremq.createConnection('main', { host: config.server.host, port: config.server.port, login: config.server.login, password: config.server.password })
-				.then(function(connection) {
-
-					// Set main connection
-					mainConnection = connection;
-
-					// Create tasks exchange
-					return mainConnection.createExchange('tasks')
-
-				})
+			return Promise.resolve()
 				.then(function() {
 
 					/* CONSUMER */
@@ -413,9 +307,6 @@ describe('connection.js :', function() {
 
 								// Test
 								assert.equal(message.result, 2);
-
-								// Destroy
-								haremq.removeConnection('main');
 
 								// Resolve
 								resolve();
