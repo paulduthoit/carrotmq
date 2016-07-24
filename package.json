@@ -1,7 +1,7 @@
 {
   "name": "haremq",
   "description": "HareMQ - AMQP wrapper for managing RabbitMQ",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "Paul Duthoit <duthoit.paul@gmail.com>",
   "homepage": "http://haremq.com/",
   "main":"index.js",
